@@ -41,12 +41,12 @@ int main(void)
     int height = 0;
     glfwGetWindowSize(window, &width, &height);
 
-    std::vector<GLubyte> data;
-    data.resize(width * height * 3);
+    std::vector<GLubyte> bitmap;
+    bitmap.resize(width * height * 3);
 
-    for (std::size_t i = 0; i < data.size(); ++i)
+    for (std::size_t i = 0; i < bitmap.size(); ++i)
     {
-        data[i] = static_cast<GLubyte>(i % 256);
+        bitmap[i] = static_cast<GLubyte>(i % 256);
     }
 
     GLuint tex;
@@ -54,7 +54,7 @@ int main(void)
     GL_CHECK(glBindTexture(GL_TEXTURE_2D, tex));
     GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data()));
+    GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap.data()));
 
     GL_CHECK(GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     static const GLchar* vertex_shader_source = "\
@@ -139,19 +139,25 @@ int main(void)
     GL_CHECK(glGenVertexArrays(1, &vao));
     GL_CHECK(glBindVertexArray(vao));
 
-    /* Loop until the user closes the window */
+    std::size_t t = 0;
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
-        GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
+        for (std::size_t i = 0; i < bitmap.size(); ++i)
+        {
+            bitmap[i] = static_cast<GLubyte>((i + t) % 256);
+        }
+        
+        // TODO use PBO
+        GL_CHECK(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, bitmap.data()));
 
+        GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
         GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 3));
 
-        /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
         glfwPollEvents();
+
+        ++t;
     }
 
     glfwTerminate();
