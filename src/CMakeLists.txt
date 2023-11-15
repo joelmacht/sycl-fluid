@@ -1,8 +1,7 @@
-add_executable(viewer main.cpp ${GLFW_SOURCE_DIR}/deps/glad_gl.c)
+add_executable(viewer main.cpp)
 
 find_package(OpenGL REQUIRED)
 
 target_link_libraries(viewer PRIVATE ${OPENGL_gl_LIBRARY})
+target_link_libraries(viewer PRIVATE glad)
 target_link_libraries(viewer PRIVATE glfw)
-
-target_include_directories(viewer PRIVATE ${GLFW_SOURCE_DIR}/deps)
