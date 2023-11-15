@@ -1,6 +1,8 @@
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <string>
 
 int main(void)
 {
@@ -42,13 +44,20 @@ int main(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    // GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    // static const GLchar* inline_vertex_shader = "\
+    // #version 460\
+    // \
+    // ";
+    // glShaderSource(vertex_shader, 1, &inline_vertex_shader, nullptr);
+    // glCompileShader(vertex_shader);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glWIndowsp(0, 0);
         glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
 
         /* Swap front and back buffers */
