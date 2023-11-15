@@ -56,16 +56,20 @@ int main(void)
     GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data()));
-    GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 
     GL_CHECK(GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     static const GLchar* vertex_shader_source = "\
     #version 400\n\
     \
+    layout(location = 0) out vec2 vertex_texture_coordinate;\
+    \
     void main()\
     {\
-        vec2 vertices[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1, 3));\
-        gl_Position = vec4(vertices[gl_VertexID], 0, 1);\
+        const vec2 vertices[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1, 3));\
+        \
+        gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\
+        \
+        vertex_texture_coordinate = 0.5 * gl_Position.xy + vec2(0.5);\
     }\
     \
     ";
@@ -87,11 +91,15 @@ int main(void)
     static const GLchar* fragment_shader_source = "\
     #version 400\n\
     \
+    uniform sampler2D bitmap;\
+    \
+    layout(location = 0) in vec2 fragment_texture_coordinate;\
+    \
     layout(location = 0) out vec4 framebuffer_color;\
     \
     void main()\
     {\
-        framebuffer_color = vec4(1.0);\
+        framebuffer_color = vec4(texture(bitmap, fragment_texture_coordinate).rgb, 1.0);\
     }\
     \
     ";
