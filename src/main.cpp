@@ -144,7 +144,7 @@ int main(void)
     {
         for (std::size_t i = 0; i < bitmap.size(); ++i)
         {
-            bitmap[i] = static_cast<GLubyte>((i + t) % 256);
+            bitmap[i] = static_cast<GLubyte>((i + t) % 255);
         }
         
         // TODO use PBO
