@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cassert>
 
-#define GL_CHECK(api_call) { api_call; assert(glGetError() == GL_NO_ERROR);}
+#define GL_CHECK(api_call) api_call; assert(glGetError() == GL_NO_ERROR);
 
 int main(void)
 {
@@ -17,7 +17,7 @@ int main(void)
         return -1;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
@@ -58,24 +58,85 @@ int main(void)
     GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data()));
     GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    GL_CHECK({});
-    static const GLchar* inline_vertex_shader = "\
-    #version 460\
+    GL_CHECK(GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER));
+    static const GLchar* vertex_shader_source = "\
+    #version 400\n\
     \
     void main()\
     {\
+        vec2 vertices[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1, 3));\
+        gl_Position = vec4(vertices[gl_VertexID], 0, 1);\
     }\
     \
     ";
-    GL_CHECK(glShaderSource(vertex_shader, 1, &inline_vertex_shader, nullptr));
+    GL_CHECK(glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr));
     GL_CHECK(glCompileShader(vertex_shader));
+    {
+        GLint info_log_length;
+        GL_CHECK(glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &info_log_length));
+        std::vector<GLchar> info_log(info_log_length);
+        GL_CHECK(glGetShaderInfoLog(vertex_shader, info_log_length, nullptr, info_log.data()));
+        for (auto c: info_log)
+            std::cout << c;        
+        GLint is_compiled;
+        GL_CHECK(glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &is_compiled));
+        assert(is_compiled == GL_TRUE);
+    }
+
+    GL_CHECK(GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
+    static const GLchar* fragment_shader_source = "\
+    #version 400\n\
+    \
+    layout(location = 0) out vec4 framebuffer_color;\
+    \
+    void main()\
+    {\
+        framebuffer_color = vec4(1.0);\
+    }\
+    \
+    ";
+    GL_CHECK(glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr));
+    GL_CHECK(glCompileShader(fragment_shader));
+    {
+        GLint info_log_length;
+        GL_CHECK(glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &info_log_length));
+        std::vector<GLchar> info_log(info_log_length);
+        GL_CHECK(glGetShaderInfoLog(fragment_shader, info_log_length, nullptr, info_log.data()));
+        for (auto c: info_log)
+            std::cout << c;        
+        GLint is_compiled;
+        GL_CHECK(glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &is_compiled));
+        assert(is_compiled == GL_TRUE);
+    }
+
+    GL_CHECK(GLuint program = glCreateProgram());
+    GL_CHECK(glAttachShader(program, vertex_shader));
+    GL_CHECK(glAttachShader(program, fragment_shader));
+    GL_CHECK(glLinkProgram(program));
+    {
+        GLint info_log_length;
+        GL_CHECK(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_log_length));
+        std::vector<GLchar> info_log(info_log_length);
+        GL_CHECK(glGetProgramInfoLog(program, info_log_length, nullptr, info_log.data()));
+        for (auto c: info_log)
+            std::cout << c; 
+        GLint is_linked;
+        GL_CHECK(glGetProgramiv(program, GL_LINK_STATUS, &is_linked));
+        assert(is_linked == GL_TRUE);
+    }
+    GL_CHECK(glUseProgram(program));
+
+    GLuint vao;
+    GL_CHECK(glGenVertexArrays(1, &vao));
+    GL_CHECK(glBindVertexArray(vao));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
+
+        GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 3));
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
