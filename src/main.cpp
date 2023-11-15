@@ -46,7 +46,6 @@ int main(void)
 
     for (std::size_t i = 0; i < data.size(); ++i)
     {
-        // data[i] = static_cast<int>(i);
         data[i] = static_cast<GLubyte>(i % 256);
     }
 
@@ -63,12 +62,14 @@ int main(void)
     \
     layout(location = 0) out vec2 vertex_texture_coordinate;\
     \
+    const vec2 fullscreen_triangle_positions[3] = vec2[](\
+        vec2(-1.0, -1.0),\
+        vec2(3.0, -1.0),\
+        vec2(-1.0, 3.0));\
+    \
     void main()\
     {\
-        const vec2 vertices[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1, 3));\
-        \
-        gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\
-        \
+        gl_Position = vec4(fullscreen_triangle_positions[gl_VertexID], 0.0, 1.0);\
         vertex_texture_coordinate = 0.5 * gl_Position.xy + vec2(0.5);\
     }\
     \
