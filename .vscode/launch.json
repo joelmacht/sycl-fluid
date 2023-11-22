@@ -5,7 +5,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/Debug/viewer.exe",
+            "program": "${workspaceFolder}/build/src/viewer.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

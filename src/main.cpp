@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <sycl/sycl.hpp>
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -138,6 +140,25 @@ int main(void)
     GLuint vao;
     GL_CHECK(glGenVertexArrays(1, &vao));
     GL_CHECK(glBindVertexArray(vao));
+
+    for (auto platform : sycl::platform::get_platforms())
+    {
+        std::cout << "Platform: "
+                  << platform.get_info<sycl::info::platform::name>()
+                  << ", "
+                  << platform.get_info<sycl::info::platform::version>()
+                  << std::endl;
+
+        for (auto device : platform.get_devices())
+        {
+            std::cout << "\tDevice: "
+                      << device.get_info<sycl::info::device::name>()
+                      << std::endl;
+        }
+    }
+
+    sycl::queue q(sycl::default_selector_v);
+    std::cout << "Created queue for device: " << q.get_device().get_info<sycl::info::device::name>() << std::endl;
 
     std::size_t t = 0;
     while (!glfwWindowShouldClose(window))
